@@ -15,8 +15,11 @@ h1 {
 	background-color: white;
 }
 
-#svgchart circle {
-	fill: darkseagreen;
+#svgchart circle.clean {
+	fill: green;
+}
+#svgchart circle.doped {
+	fill: red;
 }
 
 #svgchart text.axisLabel, .smallText {

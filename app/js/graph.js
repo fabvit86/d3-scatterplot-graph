@@ -8,11 +8,9 @@ function parseTimeToDate (time){
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/cyclist-data.json'
 $.getJSON(url, (json, textStatus) => { // json is an array of objects
 	const numberOfElements = json.length
-	const firstTime = d3.min(json, (d) => d.Time),
-				lastTime  = d3.max(json, (d) => d.Time)
-	// convert every MM:SS string to a date object:
-	const firstDate = parseTimeToDate(firstTime),
-	      lastDate  = parseTimeToDate(lastTime)
+	const firstDate = parseTimeToDate(d3.min(json, (d) => d.Time)),
+	      lastDate  = parseTimeToDate(d3.max(json, (d) => d.Time))
+	lastDate.setSeconds(lastDate.getSeconds() + 5) // add 5 seconds to the last time to place it away from the axis origin
 
 	const margins = {top: 20, right: 20, bottom: 60, left: 120}
 	const chartHeight = 600 - margins.top - margins.bottom
@@ -25,7 +23,7 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
 
 	// y scale (Place ranking):
 	const y = d3.scaleLinear().range([chartHeight, 0]) // because the origin is top-left, top will be chartHeight and bottom will be 0
-	y.domain([d3.max(json, (d) => d.Place), 1]) // set the scale to the specified array of numbers [lowestPlace, 1]
+	y.domain([d3.max(json, (d) => d.Place + 1), 1]) // set the scale to the specified array of numbers [lowestPlace, 1]
 
 	// svg chart:
 	const svgchart = d3.select('#svgchart') // select the svg element
@@ -46,12 +44,23 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
   	.attr("r", 4) // circle radius
   	.attr("cx", (d) => x(parseTimeToDate(d.Time))) // circle x coord
     .attr("cy", (d) => y(d.Place)) // circle y coord
-
-	// bars:
-	// const bar = svgchart.selectAll("g") // each bar is a g element
-	// 					    .data(json)
-	// 					  .enter().append("g")
-	// 					    .attr("transform", (d, i) => "translate(" + i * barWidth + ", 0)" ) // translate the g element horizontally
+    .attr("class", (d) => d.Doping ? "doped" : "clean")
+    .on("mouseover", function(d) {
+    	d3.select(this).classed("overed", true) // add "overed" class to the rect
+    	tooltip.transition()
+    		.duration(300)
+    		.style("opacity", 1) // show the tooltip
+    	tooltip.html(d.Name + "<br>Time: " + d.Time +"<hr>")
+       .style("left", (d3.event.pageX - d3.select('.tooltip').node().offsetWidth - 5) + "px")
+       .style("top", (d3.event.pageY - d3.select('.tooltip').node().offsetHeight) + "px");
+    })
+    .on("mouseleave", function(d) {
+    	d3.select(this).classed("overed", false)
+    	tooltip.transition()
+    		.duration(300)
+    		.style("opacity", 0)
+    	tooltip.html("")
+    })
 
  //  bar.append("rect") // insert a rect in the g element
  //  		.attr("class", "bar")
@@ -89,8 +98,8 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
 	xAxis.append("text")
 		.classed("smallText", true)
 		.text("[MM:SS]")
-		.attr("dx", "44.5em")
-		.attr("dy", "4.3em")
+		.attr("dx", "40.5em")
+		.attr("dy", "4.4em")
   xAxis.selectAll("text").style("text-anchor", "middle") // center x axis ticks' text
 	
 	//y axis line:
@@ -102,7 +111,7 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
  		.attr("id", "yAxisLabel")
  		.classed("axisLabel", true)
  		.text("Rank")
- 		.attr("dx", "-15em") // x offset
- 		.attr("dy", "-3.25em") // y offset
+ 		.attr("dx", "-13em") // x offset
+ 		.attr("dy", "-2.5em") // y offset
  		.attr("transform", "rotate(-90)") // rotate the label vertically
 })
