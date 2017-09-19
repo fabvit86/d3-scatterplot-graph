@@ -50,7 +50,11 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
     	tooltip.transition()
     		.duration(300)
     		.style("opacity", 1) // show the tooltip
-    	tooltip.html(d.Name + "<br>Time: " + d.Time +"<hr>")
+    	let tooltipContent = d.Name + 
+    											"<br><span class='smallText'>Year: " + d.Year + " - Time: " + d.Time +"</span>" + 
+    											"<br><span class='smallText'>Rank: " + d.Place + " - Nationality: " + d.Nationality + "</span>"
+      if (d.Doping) tooltipContent += "<hr><span class='smallText'>" + d.Doping + "</span>"
+    	tooltip.html(tooltipContent)
        .style("left", (d3.event.pageX - d3.select('.tooltip').node().offsetWidth - 5) + "px")
        .style("top", (d3.event.pageY - d3.select('.tooltip').node().offsetHeight) + "px");
     })
@@ -61,28 +65,6 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
     		.style("opacity", 0)
     	tooltip.html("")
     })
-
- //  bar.append("rect") // insert a rect in the g element
- //  		.attr("class", "bar")
- //  		.attr("y", (d) => y(d.Place)) // y coordinate of the rect (ex: if y height is 10px, y must be set to chartHeight-10)
-	//     .attr("width", barWidth - 1) // width of the rect, leave 1px for bars' spacing
-	//     .attr("height", (d) => chartHeight - y(d.Place)) // height of the rect
-	//     .on("mouseover", function(d) { // DO NOT use arrow function in this case
-	//     	d3.select(this).classed("overed", true) // add "overed" class to the rect
-	//     	tooltip.transition()
-	//     		.duration(300)
-	//     		.style("opacity", 1) // show the tooltip
-	//     	tooltip.html(formatTime(new Date(d.date)) + "<hr><span class='Place'>" + formatCurrency(d.Place) + " Billions</span>")
- //         .style("left", (d3.event.pageX - d3.select('.tooltip').node().offsetWidth - 5) + "px")
- //         .style("top", (d3.event.pageY - d3.select('.tooltip').node().offsetHeight) + "px");
-	//     })
-	//     .on("mouseout", function(d) {
-	//     	d3.select(this).classed("overed", false)
-	//     	tooltip.transition()
-	//     		.duration(300)
-	//     		.style("opacity", 0)
-	//     	tooltip.html("")
-	//     })
 
 	//x axis line:
 	const xAxis = svgchart.append('g')
@@ -102,10 +84,12 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
 		.attr("dy", "4.4em")
   xAxis.selectAll("text").style("text-anchor", "middle") // center x axis ticks' text
 	
+	let yTicks = y.ticks() // y ticks array
+	if (!yTicks.find(el => el === 1)) yTicks.push(1) // add first position to ticks if not showed automatically
 	//y axis line:
 	const yAxis = svgchart.append('g')
 									.classed("y-axis", true)
-								 	.call(d3.axisLeft(y))
+								 	.call(d3.axisLeft(y).tickValues(yTicks))
   // y axis label:
 	yAxis.append("text")
  		.attr("id", "yAxisLabel")
@@ -114,4 +98,28 @@ $.getJSON(url, (json, textStatus) => { // json is an array of objects
  		.attr("dx", "-13em") // x offset
  		.attr("dy", "-2.5em") // y offset
  		.attr("transform", "rotate(-90)") // rotate the label vertically
+
+ 	// legend:
+ 	d3.select('#svgchart')
+ 		.append("circle")
+ 			.attr("r", 4)
+ 			.attr("cx", "10em")
+ 			.attr("cy", "2em")
+ 			.classed("clean", true)
+	d3.select('#svgchart')
+		.append('text')
+		.text("No doping allegations")
+		.attr("dx", "10.5em")
+		.attr("dy", "2.25em")
+	d3.select('#svgchart')
+ 		.append("circle")
+ 			.attr("r", 4)
+ 			.attr("cx", "10em")
+ 			.attr("cy", "4em")
+ 			.classed("doped", true)
+	d3.select('#svgchart')
+		.append('text')
+		.text("Has doping allegations")
+		.attr("dx", "10.5em")
+		.attr("dy", "4.25em")
 })
