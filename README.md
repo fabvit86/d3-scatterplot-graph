@@ -8,3 +8,5 @@ FreeCodeCamp Project: Visualize Data with a Scatterplot Graph using D3.js
 - I can mouse over a plot to see a tooltip with additional details.
 
 Built with D3.js v4
+
+Live Demo [Here](https://codepen.io/fabvit86/full/QqNwOQ/)
